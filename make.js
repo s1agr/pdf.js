@@ -101,6 +101,8 @@ var COMMON_WEB_FILES =
        'web/debugger.js'],
     COMMON_WEB_FILES_PREPROCESS =
       ['web/viewer.js',
+       'web/viewer_annotator.js',
+       'web/annotator.js',
        'web/viewer.html'],
     COMMON_FIREFOX_FILES_PREPROCESS =
       [FIREFOX_CONTENT_DIR + 'PdfStreamConverter.jsm',
@@ -135,9 +137,12 @@ target.generic = function() {
       ['LICENSE', GENERIC_DIR],
       ['external/webL10n/l10n.js', GENERIC_DIR + '/web'],
       ['web/compatibility.js', GENERIC_DIR + '/web'],
-      ['web/compressed.tracemonkey-pldi-09.pdf', GENERIC_DIR + '/web'],
+      //['web/compressed.tracemonkey-pldi-09.pdf', GENERIC_DIR + '/web'],
       ['external/bcmaps/*', GENERIC_DIR + '/web/cmaps/'],
-      ['web/locale', GENERIC_DIR + '/web']
+      ['web/locale', GENERIC_DIR + '/web'],
+      /* Annotator functionlities */
+      ['web/viewer_annotator.js', GENERIC_DIR + '/web'],
+      ['web/annotator.js', GENERIC_DIR + '/web'] 
     ],
     preprocess: [
       [BUILD_TARGETS, GENERIC_DIR + BUILD_DIR],
