@@ -45,8 +45,9 @@ var initializeAnnotator = function() {
 	  app.include(crowdTakeOver);
 	  app.include(pageUri);
 	  app.include(annotator.storage.http, {
-	    prefix: 'http://localhost:5000',
+	    prefix: 'http://52.5.78.150:8080/swnotes-store',
 	    localSuggestionPrefix: 'http://localhost:3333',
+      localSuggestionPDFUploadURL: '/blobsub?uri=' + encodeURIComponent(PDFViewerApplication.pdfDocument.fingerprint), 
 	    localSuggestionURL: '/onlinegrind?url=' + encodeURIComponent(PDFViewerApplication.url) /*getQueryString("facts")*/,
 	  });
 	  app.include(annotator.ui.main, {

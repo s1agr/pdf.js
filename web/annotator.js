@@ -12811,13 +12811,13 @@ HttpStorage.prototype.query = function (queryObj) {
         console.log("Here are the results on the server");
         console.log(rows);
 
-	    _this.localSuggestionQuery(queryObj, rows)
-	    .then(function(results) {
-	    	console.log("Calling ConvertFactsToAnnotations");
-	    	console.log(results);
-	    	_this.convertFactsToAnnotations(results);
-	    });
-
+        _this.localSuggestionQuery(queryObj, rows)
+        .then(function(results) {
+            console.log("Calling ConvertFactsToAnnotations for %o", results);
+            _this.convertFactsToAnnotations(results);
+        });
+ 
+       console.log("Returning all results");
         return {results: rows, meta: obj};
     });
     /*
@@ -12874,6 +12874,24 @@ HttpStorage.prototype.convertFactsToAnnotations = function (facts) {
 	return ret;
 } 
 
+HttpStorage.prototype.sendPDFBlob = function(url) {
+    return new Promise(function(resolve, reject) {
+        PDFViewerApplication.pdfDocument.getData().then(
+            function getDataSuccess(data) {
+                var blob = PDFJS.createBlob(data, 'application/pdf');
+                var fd = new FormData();
+                fd.append('data', blob);
+                var oReq = new XMLHttpRequest();
+                oReq.open("POST", url, true);
+                oReq.onload = function (oEvent) {
+                    console.log("Done loading %o, response is %o", oEvent, oReq.response);
+                    resolve(JSON.parse(oReq.response));
+                };
+                oReq.send(fd);
+            });
+    });
+}
+
 /**
  * function:: HttpStorage.prototype.localSuggestionQuery(queryObj)
  *
@@ -12886,7 +12904,8 @@ HttpStorage.prototype.convertFactsToAnnotations = function (facts) {
  */
 HttpStorage.prototype.localSuggestionQuery = function (queryObj, existingAnnotations) {
 	console.log("Local Suggestion Query called!");
-	var url = this.options.localSuggestionPrefix + this.options.localSuggestionURL;
+	/*
+    var url = this.options.localSuggestionPrefix + this.options.localSuggestionURL;
 	//console.log("The existing annotations are:");
 	//console.log(existingAnnotations);
 
@@ -12901,9 +12920,21 @@ HttpStorage.prototype.localSuggestionQuery = function (queryObj, existingAnnotat
     return $.ajax(url, {
         type: "GET",
         dataType: "json"})
+    */
+    // We don't want to re-create the annotations that are already there.
+    // So we're collecting all the hash values of the annotations that are there
+    var allChksums = [];
+    for (var i = 0; i < existingAnnotations.length; i++) {
+        if (existingAnnotations[i].hashval) {
+            allChksums.push(existingAnnotations[i].hashval);
+        }
+    }
+
+    return this.sendPDFBlob(this.options.localSuggestionPrefix + this.options.localSuggestionPDFUploadURL)
     .then( function (obj) {
-    	//console.log("This is the local suggestion Query:");
+
     	obj = obj.filter(function(elm) { 
+            console.log("Filtering - %o", elm);
     		elm.fromfactx = true;
     		if (typeof elm.type === "undefined") {
     			return false;
@@ -12922,9 +12953,14 @@ HttpStorage.prototype.localSuggestionQuery = function (queryObj, existingAnnotat
     			console.log(elm.sentence);
     			return false;
     		}
+
     		return true;
     	});
-    	//console.log(obj);
+        
+    	//console.log("~~~~~~~~~~~~~~~");
+        console.log("After filtering, got %o", obj);
+        //console.log(obj);
+        //console.log("~~~~~~~~~~~~~~~");
     	return obj;
     });
 };
